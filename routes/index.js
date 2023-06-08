@@ -19,7 +19,7 @@ app.use(requestTime);
 app.get('/favicon.ico', (req, res) => res.status(204));
 
 app.get('/', (req, res, next) => {
-  if (logged == true){
+  //if (logged == true){
     var name
     var post
     pool.connect(function (err, client, done) {
@@ -28,25 +28,24 @@ app.get('/', (req, res, next) => {
         console.log("Can not connect to the DB" + err);
       }
   
-      client.query('SELECT * FROM post LEFT JOIN users ON users.username = post.owner ORDER BY post_id DESC', function (err, result) {
+      client.query('SELECT * FROM post ORDER BY post_id DESC', function (err, result) {
         done();
   
         if (err) {
           console.log(err);
           res.status(400).send(err);
         }
-        // try if there are no posts
+        //TODO try if there are no posts
         name = current_user.username;
-        post = result.rows[0].post_id + '--> ' + result.rows[0].title + ': ' + result.rows[0].content + '\n by: ' + result.rows[0].username;
-        res.render('index', { title: 'Express', message: name, post: post, time: req.requestTime});
+        console.log(result.rows);
+        //post = result.rows[0].post_id + '--> ' + result.rows[0].title + ': ' + result.rows[0].content + '\n by: ' + result.rows[0].username;
+        res.render('index', { title: 'Express', message: name, result: result.rows, time: req.requestTime});
       })
 
     })
-    pool.end();
-
-  } else {
-    res.sendFile(path.join(__dirname, '..' ,'views', 'login.html'));
-  }
+  // } else {
+  //   res.sendFile(path.join(__dirname, '..' ,'views', 'login.html'));
+  // }
 });
 
 app.get('/login', (req, res) => {
@@ -78,8 +77,7 @@ app.post('/login', (req, res) => {
           console.log("Login succesfull");
           current_user = new User(result.rows[0].id, result.rows[0].name, result.rows[0].last_name, result.rows[0].username);
           logged = true;
-
-
+          res.redirect('/');
         } else {
           console.log("Login falied");
         }
@@ -90,11 +88,11 @@ app.post('/login', (req, res) => {
 app.post('/singup', (req, res) => {
     const post = req.body;
     
-    // Check if user alredy exist 
+    //TODO Check if user alredy exist 
 
     var query = `INSERT INTO public.users (username, name, last_name, email, password, birth_date, gender)  
-                VALUES (\'${post.username}\', \'${post.name}\', \'${post.last_name}\', \'${post.email}\', \'${post.password}\', \'${post.birthdate}\', \'${post.gender}\')`;
-    
+                VALUES (\'${post.username}\', \'${post.name}\', \'${post.last_name}\', \'${post.email}\', \'${post.password}\', \'${post.birth_date}\', \'${post.gender}\')`;
+        
     pool.connect(function (err, client, done) {
   
       if (err) {
@@ -108,7 +106,8 @@ app.post('/singup', (req, res) => {
           console.log(err);
           res.status(400).send(err);
         }
-        res.send('New user is added to the database');
+        console.log('New user is added to the database');
+        res.redirect('/login');
       })
     })
   });

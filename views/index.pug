@@ -1,10 +1,15 @@
-extends layout
+extends layout 
 
 block content
   h1= title
   p Welcome to express #{message} !
   span 
-  p Lastest post:
-  p #{post}
+  var rows : #{result}
+  div 
+  - console.log(rows)
+  div
+  ul 
+    each post in rows ? rows : []
+      li post
   span
   p Page requested at #{time}
